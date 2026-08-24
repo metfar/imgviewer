@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 - Desktop integration fix
+
+- Added `imgviewer --install-desktop` and `--uninstall-desktop`.
+- Desktop installer writes an absolute `Exec=` path, avoiding GUI-session PATH differences.
+- Removed `TryExec=imgviewer`, which could hide the application when the desktop environment did not inherit `~/.local/bin`.
+- Documented cleanup when `pip` and `pipx` installations conflict.
+
 All notable changes to **imgviewer** are documented here.
 
 ## 0.4.0 - 2026-08-24

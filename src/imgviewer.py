@@ -50,7 +50,7 @@ def load_pygame() -> None:
             import pygame as _pygame;
     pygame = _pygame;
 
-VERSION = "0.4.0";
+VERSION = "0.4.1";
 APP_NAME = "imgviewer";
 WINDOW_TITLE = "imgviewer";
 WINDOW_SIZE = (1280, 800);
@@ -157,6 +157,107 @@ def fit_window_to_desktop(
     height = min(height, safe_h);
     return int(width), int(height);
 
+
+
+def desktop_applications_dir() -> Path:
+    xdg_data_home = os.environ.get("XDG_DATA_HOME", "").strip();
+    if xdg_data_home:
+        return Path(xdg_data_home).expanduser() / "applications";
+    return Path.home() / ".local" / "share" / "applications";
+
+
+def find_imgviewer_executable() -> Optional[Path]:
+    candidate = shutil.which(APP_NAME);
+    if candidate:
+        path = Path(candidate).expanduser().resolve();
+        if path.is_file() and os.access(path, os.X_OK):
+            return path;
+
+    argv0 = Path(sys.argv[0]).expanduser();
+    if argv0.name == APP_NAME and argv0.exists():
+        path = argv0.resolve();
+        if path.is_file() and os.access(path, os.X_OK):
+            return path;
+
+    return None;
+
+
+def desktop_exec_quote(path: Path) -> str:
+    value = str(path);
+    value = value.replace("\\", "\\\\");
+    value = value.replace('"', '\\"');
+    value = value.replace("`", "\\`");
+    value = value.replace("$", "\\$");
+    return f'"{value}"';
+
+
+def build_desktop_entry(executable: Path) -> str:
+    exec_path = desktop_exec_quote(executable);
+    return (
+        "[Desktop Entry]\n"
+        "Type=Application\n"
+        "Name=imgviewer\n"
+        "GenericName=Image Viewer\n"
+        "Comment=Fast xzgv-style image viewer\n"
+        f"Exec={exec_path} %f\n"
+        "Icon=image-x-generic\n"
+        "Terminal=false\n"
+        "Categories=Graphics;Viewer;\n"
+        "MimeType=image/png;image/jpeg;image/gif;image/bmp;image/webp;\n"
+        "StartupNotify=true\n"
+    );
+
+
+def refresh_desktop_database(applications_dir: Path) -> None:
+    updater = shutil.which("update-desktop-database");
+    if updater is None:
+        return;
+    try:
+        import subprocess;
+        subprocess.run(
+            [updater, str(applications_dir)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        );
+    except OSError:
+        pass;
+
+
+def install_desktop_entry() -> int:
+    executable = find_imgviewer_executable();
+    if executable is None:
+        print(
+            "ERROR: no se encontró un ejecutable instalado 'imgviewer' en PATH. "
+            "Instale primero con pipx y vuelva a ejecutar imgviewer --install-desktop.",
+            file=sys.stderr,
+        );
+        return 2;
+
+    applications_dir = desktop_applications_dir();
+    applications_dir.mkdir(parents=True, exist_ok=True);
+    destination = applications_dir / "imgviewer.desktop";
+    temporary = applications_dir / ".imgviewer.desktop.tmp";
+    temporary.write_text(build_desktop_entry(executable), encoding="utf-8");
+    os.chmod(temporary, 0o644);
+    os.replace(temporary, destination);
+    refresh_desktop_database(applications_dir);
+
+    print(f"Desktop entry installed: {destination}");
+    print(f"Exec: {executable}");
+    return 0;
+
+
+def uninstall_desktop_entry() -> int:
+    applications_dir = desktop_applications_dir();
+    destination = applications_dir / "imgviewer.desktop";
+    try:
+        destination.unlink();
+        print(f"Desktop entry removed: {destination}");
+    except FileNotFoundError:
+        print(f"Desktop entry not installed: {destination}");
+    refresh_desktop_database(applications_dir);
+    return 0;
 
 def is_image(path: Path) -> bool:
     return path.is_file() and path.suffix.lower() in IMAGE_EXTS;
@@ -1345,6 +1446,11 @@ def self_test() -> int:
         assert KEY_REPEAT_RATE_CPS == 32.0;
         assert KEY_REPEAT_INTERVAL_MS == 31;
 
+        desktop_text = build_desktop_entry(Path("/home/test user/.local/bin/imgviewer"));
+        assert 'Exec="/home/test user/.local/bin/imgviewer" %f' in desktop_text;
+        assert "TryExec=" not in desktop_text;
+        assert "MimeType=image/png;image/jpeg;" in desktop_text;
+
     print("imgviewer self-test: OK");
     return 0;
 
@@ -1411,6 +1517,16 @@ def parse_args() -> argparse.Namespace:
         help="Crear .nomedia y .no-media recursivamente bajo la ruta inicial y salir.",
     );
     parser.add_argument(
+        "--install-desktop",
+        action="store_true",
+        help="Instalar/actualizar la entrada del menú de aplicaciones del usuario.",
+    );
+    parser.add_argument(
+        "--uninstall-desktop",
+        action="store_true",
+        help="Eliminar la entrada del menú de aplicaciones del usuario.",
+    );
+    parser.add_argument(
         "--self-test",
         action="store_true",
         help="Ejecutar pruebas rápidas sin abrir la GUI.",
@@ -1429,6 +1545,12 @@ def main() -> int:
     if args.version:
         print(f"{APP_NAME} {VERSION}");
         return 0;
+
+    if args.install_desktop:
+        return install_desktop_entry();
+
+    if args.uninstall_desktop:
+        return uninstall_desktop_entry();
 
     if args.self_test:
         return self_test();

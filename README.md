@@ -195,22 +195,45 @@ Trash directories receive media markers automatically.
 
 ## Desktop integration on Linux
 
-The repository includes `contrib/imgviewer.desktop`. After installing the
-`imgviewer` command, install the desktop entry for the current user:
+After installing the `imgviewer` command, let imgviewer create its desktop
+entry with the absolute path to the installed executable:
 
 ```bash
-install -Dm644 contrib/imgviewer.desktop \
-  ~/.local/share/applications/imgviewer.desktop
+imgviewer --install-desktop
 ```
 
-If available on your desktop, refresh its application database:
+This writes `~/.local/share/applications/imgviewer.desktop` (or the equivalent
+location below `$XDG_DATA_HOME`) and refreshes the desktop MIME database when
+`update-desktop-database` is available. The generated entry intentionally does
+not use `TryExec`, so it is not hidden merely because the graphical login
+session has a different `PATH` from an interactive shell.
+
+To remove it:
 
 ```bash
-update-desktop-database ~/.local/share/applications
+imgviewer --uninstall-desktop
 ```
 
-imgviewer should then appear as an **Open With** option for the image MIME types
-listed in the desktop file.
+The repository still includes `contrib/imgviewer.desktop` as a generic template,
+but `--install-desktop` is the recommended method.
+
+### If pip and pipx conflict
+
+Do not keep the same application installed simultaneously with user `pip` and
+`pipx`. If `pipx install .` reports that `~/.local/bin/imgviewer` already exists
+or points somewhere unexpected, remove the older pip installation first:
+
+```bash
+python -m pip uninstall imgviewer
+pipx uninstall imgviewer
+pipx install .
+pipx ensurepath
+imgviewer --install-desktop
+```
+
+After `pipx ensurepath`, a logout/login may be required for the graphical
+session to inherit the updated path. The desktop entry itself uses an absolute
+executable path and therefore does not depend on that for launching.
 
 ## Development checks
 
@@ -247,3 +270,4 @@ version 2 or (at your option) any later version** (`GPL-2.0-or-later`).
 See `LICENSE` for the complete GPL version 2 text.
 
 <p align=center><b>- oOo -</b></p>
+
