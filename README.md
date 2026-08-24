@@ -245,3 +245,5 @@ imgviewer is free software licensed under the **GNU General Public License,
 version 2 or (at your option) any later version** (`GPL-2.0-or-later`).
 
 See `LICENSE` for the complete GPL version 2 text.
+
+<p align=center><b>- oOo -</b></p>
