@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=imgviewer
+GenericName=Image Viewer
+Comment=Fast xzgv-style image viewer
+Exec=imgviewer %f
+TryExec=imgviewer
+Icon=image-x-generic
+Terminal=false
+Categories=Graphics;Viewer;
+MimeType=image/png;image/jpeg;image/gif;image/bmp;image/webp;
+StartupNotify=true
