@@ -27,6 +27,8 @@ from __future__ import annotations;
 
 import argparse;
 import contextlib;
+import importlib;
+import io;
 import json;
 import math;
 import os;
@@ -34,6 +36,7 @@ import random;
 import shutil;
 import sys;
 from datetime import datetime;
+from importlib import resources;
 from pathlib import Path;
 from typing import List, Optional, Tuple;
 
@@ -50,9 +53,11 @@ def load_pygame() -> None:
             import pygame as _pygame;
     pygame = _pygame;
 
-VERSION = "0.4.1";
+VERSION = "0.4.1.post3";
 APP_NAME = "imgviewer";
 WINDOW_TITLE = "imgviewer";
+ICON_RESOURCE_PACKAGE = "imgviewer_assets";
+ICON_RESOURCE_NAME = "imgviewer.png";
 WINDOW_SIZE = (1280, 800);
 WINDOW_DECORATION_RESERVE = (32, 80);
 WINDOW_MIN_SIZE = (640, 360);
@@ -159,11 +164,81 @@ def fit_window_to_desktop(
 
 
 
-def desktop_applications_dir() -> Path:
+
+def icon_resource_bytes() -> bytes:
+    try:
+        resource = resources.files(ICON_RESOURCE_PACKAGE).joinpath(ICON_RESOURCE_NAME);
+        return resource.read_bytes();
+    except (FileNotFoundError, ModuleNotFoundError, OSError):
+        return b"";
+
+
+def set_pygame_window_icon() -> None:
+    if pygame is None:
+        return;
+    data = icon_resource_bytes();
+    if not data:
+        return;
+    try:
+        icon = pygame.image.load(io.BytesIO(data), ICON_RESOURCE_NAME);
+        pygame.display.set_icon(icon);
+    except (pygame.error, OSError, ValueError):
+        pass;
+
+
+def xdg_data_home_dir() -> Path:
     xdg_data_home = os.environ.get("XDG_DATA_HOME", "").strip();
     if xdg_data_home:
-        return Path(xdg_data_home).expanduser() / "applications";
-    return Path.home() / ".local" / "share" / "applications";
+        return Path(xdg_data_home).expanduser();
+    return Path.home() / ".local" / "share";
+
+
+def desktop_icon_path() -> Path:
+    return xdg_data_home_dir() / "icons" / "hicolor" / "64x64" / "apps" / "imgviewer.png";
+
+
+def install_desktop_icon() -> Optional[Path]:
+    data = icon_resource_bytes();
+    if not data:
+        return None;
+    destination = desktop_icon_path();
+    destination.parent.mkdir(parents=True, exist_ok=True);
+    temporary = destination.with_name(".imgviewer.png.tmp");
+    temporary.write_bytes(data);
+    os.chmod(temporary, 0o644);
+    os.replace(temporary, destination);
+    return destination;
+
+
+def uninstall_desktop_icon() -> Optional[Path]:
+    destination = desktop_icon_path();
+    try:
+        destination.unlink();
+        return destination;
+    except FileNotFoundError:
+        return None;
+
+
+def refresh_icon_cache() -> None:
+    updater = shutil.which("gtk-update-icon-cache");
+    if updater is None:
+        return;
+    icon_root = xdg_data_home_dir() / "icons" / "hicolor";
+    if not icon_root.exists():
+        return;
+    try:
+        import subprocess;
+        subprocess.run(
+            [updater, "-f", "-t", str(icon_root)],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        );
+    except OSError:
+        pass;
+
+def desktop_applications_dir() -> Path:
+    return xdg_data_home_dir() / "applications";
 
 
 def find_imgviewer_executable() -> Optional[Path]:
@@ -200,7 +275,7 @@ def build_desktop_entry(executable: Path) -> str:
         "GenericName=Image Viewer\n"
         "Comment=Fast xzgv-style image viewer\n"
         f"Exec={exec_path} %f\n"
-        "Icon=image-x-generic\n"
+        "Icon=imgviewer\n"
         "Terminal=false\n"
         "Categories=Graphics;Viewer;\n"
         "MimeType=image/png;image/jpeg;image/gif;image/bmp;image/webp;\n"
@@ -241,10 +316,16 @@ def install_desktop_entry() -> int:
     temporary.write_text(build_desktop_entry(executable), encoding="utf-8");
     os.chmod(temporary, 0o644);
     os.replace(temporary, destination);
+    icon_destination = install_desktop_icon();
     refresh_desktop_database(applications_dir);
+    refresh_icon_cache();
 
     print(f"Desktop entry installed: {destination}");
     print(f"Exec: {executable}");
+    if icon_destination is not None:
+        print(f"Icon: {icon_destination}");
+    else:
+        print("WARNING: packaged application icon was not found.", file=sys.stderr);
     return 0;
 
 
@@ -256,7 +337,13 @@ def uninstall_desktop_entry() -> int:
         print(f"Desktop entry removed: {destination}");
     except FileNotFoundError:
         print(f"Desktop entry not installed: {destination}");
+
+    icon_removed = uninstall_desktop_icon();
+    if icon_removed is not None:
+        print(f"Desktop icon removed: {icon_removed}");
+
     refresh_desktop_database(applications_dir);
+    refresh_icon_cache();
     return 0;
 
 def is_image(path: Path) -> bool:
@@ -342,6 +429,83 @@ def move_to_local_trash(selected_path: Path) -> Path:
     return target;
 
 
+class DefaultFont:
+    """Small compatibility wrapper around Pygame's built-in default font.
+
+    Normal path: pygame.font.Font(None, size).
+    Compatibility fallback: import pygame._freetype directly, avoiding
+    pygame.sysfont.  This matters for pygame 2.6.1 on Python 3.14, where the
+    pygame.font <-> pygame.sysfont circular import may make pygame.font
+    unavailable.  Both paths use Pygame's bundled default font; no system font
+    lookup and no external font file are required.
+    """
+
+    def __init__(self, size: int, bold: bool = False) -> None:
+        self.size_px = max(1, int(size));
+        self.bold = bool(bold);
+        self._font = None;
+        self._freetype = None;
+        font_error = None;
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning);
+                font_module = pygame.font;
+                if not font_module.get_init():
+                    font_module.init();
+                font = font_module.Font(None, self.size_px);
+            font.set_bold(self.bold);
+            self._font = font;
+            return;
+        except Exception as exc:  # pygame 2.6.1 / Python 3.14 compatibility path;
+            font_error = exc;
+
+        try:
+            freetype = importlib.import_module("pygame._freetype");
+            if not freetype.get_init():
+                freetype.init();
+            font = freetype.Font(None, size=self.size_px);
+            font.strong = self.bold;
+            font.antialiased = True;
+            self._freetype = font;
+            return;
+        except Exception as exc:
+            raise RuntimeError(
+                "Pygame's built-in font is unavailable. "
+                f"pygame.font failed with: {font_error!r}; "
+                f"pygame._freetype failed with: {exc!r}"
+            ) from exc;
+
+
+    def render(
+        self,
+        text: str,
+        antialias: bool,
+        color: Tuple[int, int, int],
+        background: Optional[Tuple[int, int, int]] = None,
+    ):
+        if self._font is not None:
+            return self._font.render(text, antialias, color, background);
+
+        self._freetype.antialiased = bool(antialias);
+        surface, _rect = self._freetype.render(text, color, background);
+        return surface;
+
+
+    def get_linesize(self) -> int:
+        if self._font is not None:
+            return int(self._font.get_linesize());
+        return int(self._freetype.get_sized_height());
+
+
+    def size(self, text: str) -> Tuple[int, int]:
+        if self._font is not None:
+            width, height = self._font.size(text);
+            return int(width), int(height);
+        rect = self._freetype.get_rect(text);
+        return int(rect.width), int(rect.height);
+
+
 class Entry:
     def __init__(self, kind: str, path: Path, label: str) -> None:
         self.kind = kind;
@@ -414,6 +578,7 @@ class Viewer:
         else:
             self.screen = pygame.display.set_mode(self.windowed_size, pygame.RESIZABLE);
         pygame.display.set_caption(WINDOW_TITLE);
+        set_pygame_window_icon();
         self.clock = pygame.time.Clock();
 
         self.reload_directory(preserve=None);
@@ -430,10 +595,10 @@ class Viewer:
             );
 
 
-    def font(self, size: int, bold: bool = False) -> pygame.font.Font:
+    def font(self, size: int, bold: bool = False) -> DefaultFont:
         h = self.screen.get_height();
         scale = max(0.85, min(1.5, h / 800.0));
-        return pygame.font.SysFont("dejavu sans", max(13, int(size * scale)), bold=bold);
+        return DefaultFont(max(13, int(size * scale)), bold=bold);
 
 
     def list_width(self) -> int:
@@ -1078,10 +1243,12 @@ class Viewer:
             if self.fullscreen:
                 self.fullscreen = False;
                 self.screen = pygame.display.set_mode(self.windowed_size, pygame.RESIZABLE);
+                set_pygame_window_icon();
             else:
                 self.windowed_size = self.screen.get_size();
                 self.fullscreen = True;
                 self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN);
+                set_pygame_window_icon();
             self.rebuild_scaled();
             return True;
 
@@ -1379,6 +1546,7 @@ class Viewer:
                 elif event.type == pygame.VIDEORESIZE and not self.fullscreen:
                     self.windowed_size = event.size;
                     self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE);
+                    set_pygame_window_icon();
                     self.rebuild_scaled();
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_mouse_down(event);
@@ -1449,7 +1617,10 @@ def self_test() -> int:
         desktop_text = build_desktop_entry(Path("/home/test user/.local/bin/imgviewer"));
         assert 'Exec="/home/test user/.local/bin/imgviewer" %f' in desktop_text;
         assert "TryExec=" not in desktop_text;
+        assert "Icon=imgviewer" in desktop_text;
         assert "MimeType=image/png;image/jpeg;" in desktop_text;
+        icon_data = icon_resource_bytes();
+        assert icon_data.startswith(bytes.fromhex("89504e470d0a1a0a"));
 
     print("imgviewer self-test: OK");
     return 0;

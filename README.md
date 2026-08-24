@@ -1,7 +1,7 @@
 # imgviewer
 
 **imgviewer** is a fast, keyboard-first image viewer written in Python with pygame.
-Its interface is inspired by **zgv**: filenames and directories stay visible in a
+Its interface is inspired by **xzgv**: filenames and directories stay visible in a
 list on the left while the selected image is displayed on the right.
 
 The design deliberately avoids thumbnail generation. Only the image being viewed
@@ -13,7 +13,7 @@ less CPU, memory, and I/O than a contact-sheet style gallery.
 - Filename/directory browser on the left and image preview on the right.
 - No thumbnail generation.
 - Sequential and shuffled-cycle random slideshow modes.
-- Keyboard-first controls inspired by zgv.
+- Keyboard-first controls inspired by xzgv.
 - Mouse controls and touch support.
 - Fit-to-window, 1:1 view, zoom, and panning.
 - Automatic initial window sizing so window decorations remain on-screen.
@@ -39,6 +39,8 @@ program suitable for environments such as Pydroid where pygame is available.
 From a cloned repository:
 
 ```bash
+pip install -r requirements.txt
+pip install .
 pipx install .
 ```
 
@@ -203,8 +205,10 @@ imgviewer --install-desktop
 ```
 
 This writes `~/.local/share/applications/imgviewer.desktop` (or the equivalent
-location below `$XDG_DATA_HOME`) and refreshes the desktop MIME database when
-`update-desktop-database` is available. The generated entry intentionally does
+location below `$XDG_DATA_HOME`), installs the packaged icon as
+`~/.local/share/icons/hicolor/64x64/apps/imgviewer.png`, and refreshes the
+desktop MIME database when
+`update-desktop-database` is available. The generated entry uses `Icon=imgviewer` and intentionally does
 not use `TryExec`, so it is not hidden merely because the graphical login
 session has a different `PATH` from an interactive shell.
 
@@ -269,5 +273,33 @@ version 2 or (at your option) any later version** (`GPL-2.0-or-later`).
 
 See `LICENSE` for the complete GPL version 2 text.
 
-<p align=center><b>- oOo -</b></p>
 
+## Application icon
+
+The application icon is packaged in the Python distribution and used in two
+places:
+
+- the pygame window calls `pygame.display.set_icon()` with the packaged PNG;
+- `imgviewer --install-desktop` installs the same PNG in the user's freedesktop
+  `hicolor` icon theme and writes `Icon=imgviewer` in the desktop entry.
+
+The source icon lives at:
+
+```text
+src/imgviewer_assets/imgviewer.png
+```
+
+To replace the artwork for a later release, replace that file and rebuild the
+wheel/package.
+
+
+## Font compatibility
+
+imgviewer deliberately uses Pygame's bundled default font rather than a named
+system font.  On normal installations it uses `pygame.font.Font(None, size)`.
+For pygame 2.6.1 builds where Python 3.14 triggers the known
+`pygame.font`/`pygame.sysfont` circular import, imgviewer falls back to Pygame's
+own low-level FreeType backend (`pygame._freetype`) and still uses the bundled
+default font.  This does not add a new dependency and does not replace pygame.
+
+<p align=center><b>- oOo -</b></p>

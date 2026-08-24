@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="icon.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.2623761"
+     inkscape:cx="253.88631"
+     inkscape:cy="292.702"
+     inkscape:window-width="1362"
+     inkscape:window-height="710"
+     inkscape:window-x="0"
+     inkscape:window-y="20"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient27"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop27" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop28" />
+    </linearGradient>
+    <filter
+       inkscape:label="Button"
+       inkscape:menu="Bevels"
+       inkscape:menu-tooltip="Soft bevel, slightly depressed middle"
+       style="color-interpolation-filters:sRGB;"
+       id="filter8"
+       x="-0.44571428"
+       y="-0.44571428"
+       width="1.8914286"
+       height="1.8914286">
+      <feGaussianBlur
+         stdDeviation="2.3"
+         in="SourceAlpha"
+         result="result0"
+         id="feGaussianBlur5" />
+      <feMorphology
+         in="SourceAlpha"
+         radius="6.5"
+         result="result1"
+         id="feMorphology5" />
+      <feGaussianBlur
+         stdDeviation="7"
+         in="result1"
+         id="feGaussianBlur6" />
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.3 0"
+         result="result91"
+         id="feColorMatrix6" />
+      <feComposite
+         in="result0"
+         operator="out"
+         result="result2"
+         in2="result91"
+         id="feComposite6" />
+      <feDiffuseLighting
+         surfaceScale="10"
+         id="feDiffuseLighting6">
+        <feDistantLight
+           azimuth="225"
+           elevation="45"
+           id="feDistantLight6" />
+      </feDiffuseLighting>
+      <feBlend
+         in2="SourceGraphic"
+         mode="multiply"
+         id="feBlend6" />
+      <feComposite
+         in2="SourceAlpha"
+         operator="in"
+         result="result3"
+         id="feComposite7" />
+      <feGaussianBlur
+         stdDeviation="1"
+         in="result3"
+         result="result4"
+         id="feGaussianBlur7" />
+      <feComposite
+         in2="result3"
+         operator="atop"
+         id="feComposite8" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       height="2.4010941"
+       width="1.7856513"
+       y="-0.70054703"
+       x="-0.39282563"
+       inkscape:label="Outline"
+       id="filter27">
+      <feGaussianBlur
+         in="SourceAlpha"
+         stdDeviation="4"
+         result="blur1"
+         id="feGaussianBlur23" />
+      <feComposite
+         in="SourceGraphic"
+         in2="blur1"
+         operator="out"
+         result="composite1"
+         id="feComposite23" />
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1 "
+         result="colormatrix1"
+         id="feColorMatrix23" />
+      <feGaussianBlur
+         stdDeviation="0.5"
+         result="blur2"
+         id="feGaussianBlur24" />
+      <feComposite
+         in="blur2"
+         in2="blur2"
+         operator="over"
+         result="composite2"
+         id="feComposite24" />
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 50 -5 "
+         result="colormatrix2"
+         id="feColorMatrix24" />
+      <feGaussianBlur
+         stdDeviation="1"
+         result="blur3"
+         id="feGaussianBlur25" />
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 5 -1 "
+         result="colormatrix3"
+         id="feColorMatrix25" />
+      <feFlood
+         flood-opacity="1"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood25" />
+      <feComposite
+         in="flood"
+         in2="colormatrix3"
+         operator="in"
+         result="composite3"
+         id="feComposite25" />
+      <feComposite
+         in="SourceGraphic"
+         in2="colormatrix3"
+         operator="out"
+         result="composite4"
+         id="feComposite26" />
+      <feComposite
+         in="composite4"
+         in2="composite3"
+         k2="1"
+         k3="1"
+         operator="arithmetic"
+         result="composite5"
+         id="feComposite27"
+         k1="0"
+         k4="0" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient27"
+       id="linearGradient28"
+       x1="37.129112"
+       y1="45.954492"
+       x2="70.731807"
+       y2="45.954492"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#0a8000;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill;filter:url(#filter8)"
+       id="rect1"
+       width="42"
+       height="42"
+       x="33.133961"
+       y="27.269461"
+       rx="2.8223212"
+       ry="3.5359402"
+       inkscape:export-filename="/home/wmartinez/icon.png"
+       inkscape:export-xdpi="81.852974"
+       inkscape:export-ydpi="81.852974" />
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:6.04571px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';writing-mode:lr-tb;direction:ltr;fill:#2b0000;fill-opacity:0.02204453;stroke:#000000;stroke-width:0.71406;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill;filter:url(#filter27)"
+       x="37.386028"
+       y="47.59766"
+       id="text1-3"
+       transform="matrix(1.0004454,0,0,1.0004454,-0.44332092,0.94841458)"><tspan
+         sodipodi:role="line"
+         id="tspan1-5"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:12.0914px;font-family:ZX-Spectrum;-inkscape-font-specification:'ZX-Spectrum Medium';fill:#2b0000;fill-opacity:0.02204453;stroke:none;stroke-width:0.71406"
+         x="37.386028"
+         y="47.59766">img</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:6.04571px;font-family:ZX-Spectrum;-inkscape-font-specification:'ZX-Spectrum Medium';fill:#2b0000;fill-opacity:0.02204453;stroke:none;stroke-width:0.71406"
+         x="37.386028"
+         y="56.615818"
+         id="tspan2-6">Viewer</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:6.04571px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman,  Bold';writing-mode:lr-tb;direction:ltr;fill:#fff6d5;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       x="37.129112"
+       y="47.113258"
+       id="text1"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:12.0914px;font-family:ZX-Spectrum;-inkscape-font-specification:'ZX-Spectrum Medium';fill:#fff6d5;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1;stroke-dasharray:none"
+         x="37.129112"
+         y="47.113258">img</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:6.04571px;font-family:ZX-Spectrum;-inkscape-font-specification:'ZX-Spectrum Medium';fill:#fff6d5;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1;stroke-dasharray:none"
+         x="37.129112"
+         y="56.131416"
+         id="tspan2">Viewer</tspan></text>
+  </g>
+</svg>

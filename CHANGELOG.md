@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.1.post3
+
+- Keep the dependency on standard `pygame` (`pygame>=2.6`).
+- Stop requesting a named system font with `pygame.font.SysFont`.
+- Use Pygame's bundled default font instead.
+- Add a compatibility fallback to Pygame's own `_freetype` backend when
+  `pygame.font` is unavailable because of the pygame 2.6.1 / Python 3.14
+  circular-import bug.
+- No viewer/navigation behavior changed.
+
+
+## 0.4.1.post1
+
+- Package the imgviewer PNG application icon.
+- Use the packaged PNG as the pygame window icon.
+- `--install-desktop` now installs the icon into the user's hicolor icon theme.
+- Desktop entry now uses `Icon=imgviewer`.
+- No image-viewing behavior changed.
+
+
 ## 0.4.1 - Desktop integration fix
 
 - Added `imgviewer --install-desktop` and `--uninstall-desktop`.
